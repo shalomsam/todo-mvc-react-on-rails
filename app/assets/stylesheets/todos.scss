@@ -3,3 +3,13 @@
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
 @import '../../../node_modules/todomvc-app-css/index';
+
+.filters {
+  li {
+    a {
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+}

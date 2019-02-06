@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 
 export default class TodoMvc extends React.Component {
   static propTypes = {
@@ -81,6 +82,10 @@ export default class TodoMvc extends React.Component {
     target.form.submit();
   }
 
+  filterClick = (e, filter) => {
+    this.setState({todosFilter: filter});
+  }
+
   render() {
     var header = (
       <header className="header">
@@ -112,15 +117,9 @@ export default class TodoMvc extends React.Component {
     });
 
     listItems = listItems.map((item) => {
-      var liClass = "";
-      if (this.state.editing === item.id) {
-        liClass = "editing";
-      }
-      if (item.completed) {
-        liClass += " completed"
-      }
+      var liClass = {editing: this.state.editing === item.id, completed: item.completed}
       return (
-        <li className={liClass} key={item.id}>
+        <li className={classNames(liClass)} key={item.id}>
           <form onSubmit={this.submitHandler} method="POST" action={"/todos/" + item.id}>
             <div className="view">
                 <input type="hidden" name="_method" value="" />
@@ -149,10 +148,42 @@ export default class TodoMvc extends React.Component {
       </section>
     );
 
+    var itemsLeft = this.props.todos.filter(item => !item.completed).length;
+
+    var filters = Object.keys(this.FILTERS);
+    filters = filters.map((item,i) => {
+      var filter = this.FILTERS[item];
+      return (
+        <li key={i}>
+          <a
+            href="#"
+            className={classNames({selected: this.state.todosFilter === filter})}
+            onClick={(e) => this.filterClick(e, filter)}
+          >
+            {filter}
+          </a>
+        </li>
+      );
+    });
+    var footer = (
+      <footer className="footer">
+        <span className="todo-count">
+          <strong>{itemsLeft}</strong>
+          <span> </span>
+          <span>item{itemsLeft > 1 ? 's' : ''}</span>
+          <span> left</span>
+        </span>
+        <ul className="filters">
+          {filters}
+        </ul>
+      </footer>
+    );
+
     return (
       <div>
         {header}
         {list}
+        {footer}
       </div>
     )
   }
