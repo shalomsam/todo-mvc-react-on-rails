@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import Utils from '../Utils';
 
 const todoShape = {id: PropTypes.number, task: PropTypes.string, completed: PropTypes.bool};
 
@@ -15,8 +16,33 @@ export default class TodoItem extends React.Component {
 
   state = {editingText: this.props.todo.task}
 
-  handleEdit = (e) => {
-    this.props.onEdit(e, this.props.todo);
+  // constructor(props) {
+  //   super(props);
+  //   this.editingInput = React.createRef();
+  //   this.focus = this.focus.bind(this);
+  // }
+
+  // focus() {
+  //   // this.editingInput.current.focus();
+  // }
+
+  componentDidUpdate(prevProps) {
+    if(!prevProps.show && this.props.show){
+       // We transitioned from hidden to shown. Focus the text box.
+       this.refs.myInput.getDOMNode().focus();
+    }
+  }
+
+  toggleEdit = (e) => {
+    var target = e.target;
+    setTimeout(() => {
+      target.parentElement.nextElementSibling.focus();
+      // this.refs.editField.focus();
+    }, 0);
+    // target.parentElement.nextElementSibling.focus();
+    // $(target).parent().siblings().focus();
+    // console.log($(target).parent().siblings());
+    this.props.onEdit(this.props.todo);
     this.setState({editingText: this.props.todo.task});
   }
 
@@ -27,24 +53,24 @@ export default class TodoItem extends React.Component {
   handleChange = (e) => {
     if (this.props.editing) {
       const target = e.target;
-      target.focus();
+      // target.focus();
       this.setState({editingText: target.value});
     }
   }
 
   handleUpdate = (e) => {
-    const target = e.target;
-    const value = this.state.editingText.trim();
+    const task = this.state.editingText.trim();
     const todo = this.props.todo;
-    if (value && value !== todo.task) {
-      this.props.onSave(value)
-      this.setState({editingText: value});
-      todo.task = value;
-      target.form.task.value = value;
-      target.form._method.value = 'put';
-      target.form.submit();
-    } else if (value === "") {
-      this.props.onDestroy(e);
+    if (task) {
+      this.setState({editingText: task});
+      todo.task = task;
+      Utils.put('/todos/' + todo.id, todo)
+        .then(response => {
+          this.props.onSave(todo)
+        })
+        .catch(error => this.props.onError(error));
+    } else if (task === "") {
+      this.deleteTask();
     }
   }
 
@@ -64,16 +90,22 @@ export default class TodoItem extends React.Component {
 
   completeTask = (e) => {
     const target = e.target;
-    target.form.elements.namedItem('_method').value = 'put';
-    target.value = target.checked ? true : false;
-    target.form.submit();
+    var todo = this.props.todo;
+    todo.completed = !todo.completed;
+    Utils.put('/todos/' + todo.id, todo)
+      .then(response => {
+        this.props.onToggle(todo);
+      })
+      .catch(error => this.props.onError(error));
   }
 
   deleteTask = (e) => {
-    e.preventDefault();
-    var target = e.target;
-    target.form.elements.namedItem('_method').value = "delete";
-    target.form.submit();
+    var todo = this.props.todo;
+    Utils.delete('/todos/' + todo.id)
+      .then(response => {
+        this.props.onDestroy(todo);
+      })
+      .catch(error => this.props.onError(error));
   }
 
   render() {
@@ -82,22 +114,21 @@ export default class TodoItem extends React.Component {
 
     return (
       <li className={classNames(liClass)}>
-        <form onSubmit={this.handelSubmit} method="POST" action={"/todos/" + item.id}>
           <div className="view">
-              <input type="hidden" name="_method" value="" />
-              <input type="hidden" name="task" value={item.task} />
-              <input type="checkbox" name="completed" className="toggle" onChange={this.completeTask} checked={item.completed} />
-              <label onClick={this.handleEdit}>{item.task}</label>
+              <input type="checkbox" className="toggle" onChange={this.completeTask} checked={item.completed} />
+              <label onDoubleClick={this.toggleEdit} >{item.task}</label>
               <button type="button" onClick={this.deleteTask} className="destroy"></button>
           </div>
           <input
+            // tabIndex="-1"
+            // ref={this.editingInput}
+            ref="myInput"
             className="edit"
             value={this.state.editingText}
             onBlur={this.handleUpdate}
             onChange={this.handleChange}
             onKeyDown={this.handleKeyDown}
           />
-        </form>
       </li>
     );
   }
