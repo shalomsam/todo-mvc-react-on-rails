@@ -16,49 +16,36 @@ export default class TodoItem extends React.Component {
 
   state = {editingText: this.props.todo.task}
 
-  // constructor(props) {
-  //   super(props);
-  //   this.editingInput = React.createRef();
-  //   this.focus = this.focus.bind(this);
-  // }
-
-  // focus() {
-  //   // this.editingInput.current.focus();
-  // }
-
-  componentDidUpdate(prevProps) {
-    if(!prevProps.show && this.props.show){
-       // We transitioned from hidden to shown. Focus the text box.
-       this.refs.myInput.getDOMNode().focus();
-    }
-  }
-
+  /**
+   * Method to handle toggle to editable state for TodoItem.
+   *
+   * @param {object} e - The toggle event.
+   */
   toggleEdit = (e) => {
     var target = e.target;
     setTimeout(() => {
       target.parentElement.nextElementSibling.focus();
-      // this.refs.editField.focus();
     }, 0);
-    // target.parentElement.nextElementSibling.focus();
-    // $(target).parent().siblings().focus();
-    // console.log($(target).parent().siblings());
     this.props.onEdit(this.props.todo);
     this.setState({editingText: this.props.todo.task});
   }
 
-  handelSubmit = (e) => {
-    e.preventDefault();
-  }
-
+  /**
+   * Method to handle change on editable Input element.
+   *
+   * @param {object} e - The key down event object.
+   */
   handleChange = (e) => {
     if (this.props.editing) {
       const target = e.target;
-      // target.focus();
       this.setState({editingText: target.value});
     }
   }
 
-  handleUpdate = (e) => {
+  /**
+   * Method to handle update of TodoItem.
+   */
+  handleUpdate = () => {
     const task = this.state.editingText.trim();
     const todo = this.props.todo;
     if (task) {
@@ -74,6 +61,11 @@ export default class TodoItem extends React.Component {
     }
   }
 
+  /**
+   * Method to handle Keydown event for editable Input.
+   *
+   * @param {object} e - The keydown event object.
+   */
   handleKeyDown = (e) => {
     const target = e.target;
     const todo = this.props.todo;
@@ -88,9 +80,13 @@ export default class TodoItem extends React.Component {
     }
   }
 
+  /**
+   * Method to handle completion toggle on TodoItem
+   *
+   * @param {object} e - The onchange event object.
+   */
   completeTask = (e) => {
-    const target = e.target;
-    var todo = this.props.todo;
+    const todo = this.props.todo;
     todo.completed = !todo.completed;
     Utils.put('/todos/' + todo.id, todo)
       .then(response => {
@@ -99,7 +95,10 @@ export default class TodoItem extends React.Component {
       .catch(error => this.props.onError(error));
   }
 
-  deleteTask = (e) => {
+  /**
+   * Method the handle deletion of TodoItem.
+   */
+  deleteTask = () => {
     var todo = this.props.todo;
     Utils.delete('/todos/' + todo.id)
       .then(response => {
@@ -108,6 +107,9 @@ export default class TodoItem extends React.Component {
       .catch(error => this.props.onError(error));
   }
 
+  /**
+   * React Render.
+   */
   render() {
     var item = this.props.todo;
     var liClass = {editing: this.props.editing, completed: item.completed}
@@ -120,8 +122,6 @@ export default class TodoItem extends React.Component {
               <button type="button" onClick={this.deleteTask} className="destroy"></button>
           </div>
           <input
-            // tabIndex="-1"
-            // ref={this.editingInput}
             ref="myInput"
             className="edit"
             value={this.state.editingText}

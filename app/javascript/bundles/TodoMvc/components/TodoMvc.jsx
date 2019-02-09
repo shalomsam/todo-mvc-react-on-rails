@@ -23,18 +23,21 @@ export default class TodoMvc extends React.Component {
     editingTask: ''
   }
 
-
   /**
-   * @param props - Comes from your rails view.
+   * Constructor
+   *
+   * @param {object} props - Comes from your rails view.
    */
   constructor(props) {
     super(props);
-
-    // How to set initial state in ES6 class syntax
-    // https://reactjs.org/docs/state-and-lifecycle.html#adding-local-state-to-a-class
     this.state.todos = props.todos;
   }
 
+  /**
+   * Global Error handling method.
+   *
+   * @param {object} error - The error object.
+   */
   handleError = (error) => {
     console.log("error => ", error);
     var errorEl = `
@@ -47,9 +50,13 @@ export default class TodoMvc extends React.Component {
     this.refs.errors.innerHTML = errorEl;
   }
 
+  /**
+   * The method to toggle all TodoItem to completed or active.
+   *
+   * @param {object} e - The event object.
+   */
   toggleAll = (e) => {
     var checked = e.target.checked;
-    // this.props.model.toggleAll(checked);
     var todos = this.state.todos.map(function (todo) {
 			return Object.assign({}, todo, {completed: checked});
 		});
@@ -63,6 +70,11 @@ export default class TodoMvc extends React.Component {
       .catch(error => this.handleError(error))
   }
 
+  /**
+   * Method to handle toggling Todo as completed or active
+   *
+   * @param {TodoItem} todo - The todo object.
+   */
   handleToggle = (todo) => {
     var todos = this.state.todos.map((item) => {
       return todo === item ? Object.assign({}, item, {completed: item.completed}) : item;
@@ -70,18 +82,34 @@ export default class TodoMvc extends React.Component {
     this.setState({todos: todos});
   }
 
+  /**
+   * Method to set state to enable editing.
+   *
+   * @param {TodoItem} todo - The todo object.
+   */
   handleEditing = (todo) => {
     this.setState({editingTask: todo.task, editing: todo.id});
   }
 
-  handleSave = (e) => {
+  /**
+   * Method to reset state to stop editing.
+   */
+  handleSave = () => {
     this.setState({editing: null, editingTask: ''});
   }
 
-  handleCancel = (e) => {
+  /**
+   * Method to reset state to stop editing.
+   */
+  handleCancel = () => {
     this.setState({editing: null, editingTask: ''});
   }
 
+  /**
+   * Method to handle deletion of TodoItem from the todos array.
+   *
+   * @param {TodoItem} todo - The todo object.
+   */
   handleDelete = (todo) => {
     var todos = this.state.todos.filter((item) => {
       return todo !== item;
@@ -89,10 +117,20 @@ export default class TodoMvc extends React.Component {
     this.setState({todos: todos});
   }
 
+  /**
+   * Method to set state for filtering todos based on status.
+   *
+   * @param {string} filter - The filter type.
+   */
   filterClick = (e, filter) => {
     this.setState({todosFilter: filter});
   }
 
+  /**
+   * Method to handle addition of TodoItem to todos array.
+   *
+   * @param {object} e - The key down event object.
+   */
   handleAddTodo = (e) => {
     var target = e.target;
     if (e.keyCode === 13) {
