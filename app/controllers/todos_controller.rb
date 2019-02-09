@@ -1,7 +1,7 @@
 class TodosController < ApplicationController
   layout "todo_mvc"
   skip_before_action :verify_authenticity_token
-  before_action :set_todo, only: [:show, :edit, :update, :destroy]
+  before_action :set_todo, only: [:edit, :update, :destroy]
 
   # GET /todos
   # GET /todos.json
@@ -12,20 +12,6 @@ class TodosController < ApplicationController
     @list = { todos: @todos }
   end
 
-  # GET /todos/1
-  # GET /todos/1.json
-  def show
-  end
-
-  # GET /todos/new
-  def new
-    @todo = Todo.new
-  end
-
-  # GET /todos/1/edit
-  def edit
-  end
-
   # POST /todos
   # POST /todos.json
   def create
@@ -33,12 +19,22 @@ class TodosController < ApplicationController
 
     respond_to do |format|
       if @todo.save
-        format.html { redirect_to root_url, notice: 'Todo was successfully created.' }
-        format.json { render :index, status: :created, location: @root_url }
+        # format.html { redirect_to root_url, notice: 'Todo was successfully created.' }
+        format.json { render json: {status: 'success', todo: @todo}, status: :created, location: @root_url }
       else
-        format.html { render :index }
+        # format.html { render :index }
         format.json { render json: @todo.errors, status: :unprocessable_entity }
       end
+    end
+  end
+
+  # PATCH/PUT /todos
+  def massUpdate
+    @todos = Todo.all
+    respond_to do |format|
+      params.permit(:update);
+      @todos.update_all(update_params);
+      format.json { render json: {status: 'success', todos: @todo.as_json}, status: :ok }
     end
   end
 
@@ -47,10 +43,8 @@ class TodosController < ApplicationController
   def update
     respond_to do |format|
       if @todo.update(todo_params)
-        format.html { redirect_to root_url, notice: 'Todo was successfully updated.' }
-        format.json { render :show, status: :ok, location: @todo }
+        format.json { render json: {status: 'success'}, status: :ok, location: @root_url }
       else
-        format.html { render :index }
         format.json { render json: @todo.errors, status: :unprocessable_entity }
       end
     end
@@ -61,8 +55,7 @@ class TodosController < ApplicationController
   def destroy
     @todo.destroy
     respond_to do |format|
-      format.html { redirect_to root_url, notice: 'Todo was successfully destroyed.' }
-      format.json { head :no_content }
+      format.json { render json: {status: 'success'}, status: :ok, location: @root_url }
     end
   end
 
@@ -70,6 +63,12 @@ class TodosController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_todo
       @todo = Todo.find(params[:id])
+    end
+
+    def update_params
+      # params.permit(:update, :completed);
+      update = params[:update].permit!;
+      return update.as_json;
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
