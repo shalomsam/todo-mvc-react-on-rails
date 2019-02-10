@@ -3,14 +3,12 @@
 This is a simple Todo MVC app that is built using Shakacode's ReactOnRails Framework. The hosted version of the app can be see [here](https://afternoon-anchorage-49678.herokuapp.com/#)
 
 ## Info
---------
 * **Ruby Version**: 2.6.1p33
 * **Rails Version**: 5.2.2
 * **React Version**: 16.8.1
 * **ReactOnRails Version**: 11.1.4
 
 ## Install and Run locally
----------------------------
 First clone this repository by running the following command:
 ```git
 git clone git@github.com:shalomsam/todo-mvc-react-on-rails.git
